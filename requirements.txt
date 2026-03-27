@@ -1,0 +1,7 @@
+# Add your dependencies here
+# e.g.:
+# rdflib
+# requests
+# beautifulsoup4
+# pandas
+# scikit-learn

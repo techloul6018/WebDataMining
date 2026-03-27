@@ -1,195 +1,277 @@
-# WebDataMining - Architecture Knowledge Graph Extraction
-
-Une pipeline complète pour extraire, traiter et structurer des données d'architecture à partir de sources Web. Ce projet construit un corpus d'architecture, effectue l'extraction d'informations (NER) et établit des relations entre entités pour créer une base de connaissances structurée.
-
-## 📋 Table des matières
-
-- [Vue d'ensemble](#vue-densemble)
-- [Utilisation](#utilisation)
-- [Phases du projet](#phases-du-projet)
-- [Structure du code](#structure-du-code)
-
-## 🎯 Vue d'ensemble
-
-Ce notebook implémente une pipeline de web mining en trois phases principales :
-
-1. **Phase 1 - Web Scraping & Corpus Building** : Extraction et nettoyage du contenu textuel à partir de URLs d'architecture
-2. **Phase 2 - Information Extraction** : Extraction d'entités nommées (NER) pour identifier les personnes, organisations, lieux, dates, etc.
-3. **Phase 3 - Relation Extraction** : Identification des relations entre entités pour construire un graphe de connaissances
+# 🕷️ Web Crawling & Data Extraction Pipeline
 
 
-## 📖 Utilisation
-
-### Exécution complète
-
-Le notebook s'exécute en 3 phases successives. Chaque phase peut être exécutée indépendamment si le fichier corpus existe.
-
-### Exécution personnalisée
-
-Vous pouvez modifier les paramètres de chaque phase :
-
-**Phase 1 - Web Scraping & Corpus :**
-```python
-MIN_WORDS = 500           # Nombre minimum de mots par document
-OUTPUT_FILE = "architecture_corpus.jsonl"  # Fichier de sortie
-URLS = [...]              # Liste des URLs à scraper
-```
-
-**Phase 2 & 3 - NER & Relations :**
-```python
-TARGET_LABELS = {          # Étiquettes à extraire (Phase 2)
-    "PERSON", "ORG", "GPE", "DATE", "WORK_OF_ART", "FAC", "LOC", "EVENT"
-}
-TARGET_ENTS = {            # Entités pour les relations (Phase 3)
-    "PERSON", "ORG", "GPE", "DATE", "WORK_OF_ART", "FAC", "LOC", "EVENT"
-}
-```
-
-## 🔄 Phases du projet
-
-### Phase 1 : Web Scraping & Construction du Corpus
-
-**Objectif :** Extraire le contenu textuel principal de 14 URLs d'architecture.
-
-**Fonctionnalités :**
-- `extract_main_text(url)` : Récupère et nettoie le contenu d'une page Web
-- `is_useful(text, min_words)` : Valide la qualité du contenu extraite
-- `save_to_jsonl(records, output_path)` : Sauvegarde en format JSONL
-
-**Entrées :**
-- 14 URLs sur l'architecture, patrimoine et histoire architecturale
-
-**Sorties :**
-- `architecture_corpus.jsonl` : Fichier JSONL avec structure :
-  ```json
-  {
-    "url": "https://...",
-    "word_count": 1234,
-    "text": "Contenu texte extrait..."
-  }
-  ```
-
-**Exemples d'URLs traitées :**
-- UNESCO World Heritage Sites
-- Smarthistory - Global Architecture History
-- Fallingwater (Frank Lloyd Wright)
-- Le Corbusier & Fondation Le Corbusier
-- Architecture Belle Époque française
-- Villa Ephrussi de Rothschild
-- Villa Kérylos
+A modular pipeline for **crawling the web**, **extracting structured information**, building a **Knowledge Graph**, and querying it through a **RAG interface**. Each stage is independently runnable and feeds into the next.
 
 ---
 
-### Phase 2 : Extraction d'Informations (NER)
+## 📋 Table of Contents
 
-**Objectif :** Extraire des entités nommées du corpus pour identifier concepts clés.
-
-**Fonctionnalités :**
-- `detect_language(text)` : Détecte automatiquement la langue (EN/FR)
-- `is_valid_entity(ent)` : Valide les entités selon critères (longueur, type, majuscule)
-- `extract_nodes(jsonl_path)` : Extrait toutes les entités par label
-
-**Étiquettes extraites :**
-| Label | Description | Exemple |
-|-------|-------------|---------|
-| `PERSON` | Personnes remarquables | Frank Lloyd Wright, Le Corbusier |
-| `ORG` | Organisations, institutions | UNESCO, Fondation Le Corbusier |
-| `GPE` | Lieux géographiques | France, Paris, Venice |
-| `DATE` | Dates et périodes | 1900-1970, Belle Époque |
-| `WORK_OF_ART` | Œuvres architecturales | Fallingwater, Villa Kérylos |
-| `EVENT` | Événements historiques | Expositions, conférences |
-
-**Sorties :**
-```
-PERSON (25 nodes)
-  - Frank Lloyd Wright
-  - Le Corbusier
-  - Gustave Eiffel
-  - ...
-
-ORG (18 nodes)
-  - UNESCO
-  - Fondation Le Corbusier
-  - ...
-```
-
-**Affichage :** Les 10 premiers nodes de chaque catégorie sont affichés triés alphabétiquement.
-
-**Critères de validation :**
-- Minimum 3 caractères
-- Au moins une majuscule (pour plupart des labels)
-- Exclusion de mots vides génériques
+- [Project Structure](#project-structure)
+- [Hardware Requirements](#hardware-requirements)
+- [Installation](#installation)
+- [How to Run Each Module](#how-to-run-each-module)
+  - [1. Crawl](#1-crawl)
+  - [2. Information Extraction (IE)](#2-information-extraction-ie)
+  - [3. Knowledge Graph (KG)](#3-knowledge-graph-kg)
+  - [4. Reasoning](#4-reasoning)
+  - [5. KG Embeddings (KGE)](#5-kg-embeddings-kge)
+  - [6. RAG](#6-rag)
+- [RAG Demo](#rag-demo)
+- [KG Artifacts](#kg-artifacts)
+- [Screenshot](#screenshot)
 
 ---
 
-### Phase 3 : Extraction de Relations
+## 🗂 Project Structure
 
-**Objectif :** Identifier les relations entre entités basées sur la structure syntaxique.
-
-**Fonctionnalités :**
-- `extract_edges(jsonl_path)` : Extrait triplets (source, relation, target)
-- Analyse syntaxique pour identifier verbes et dépendances
-- Support bilingue (EN/FR)
-
-**Structure d'une relation :**
-```json
-{
-  "source": "Entity A",
-  "relation": "verb_lemma",
-  "target": "Entity B",
-  "sentence": "Phrase contexte complète..."
-}
+```
+project-root/
+├─ src/
+│  ├─ crawl/       # Web crawling & document fetching
+│  ├─ ie/          # Information extraction (NER, relation extraction)
+│  ├─ kg/          # Knowledge graph construction & serialisation
+│  ├─ reason/      # Ontology reasoning & inference
+│  ├─ kge/         # Knowledge graph embeddings
+│  └─ rag/         # Retrieval-Augmented Generation interface
+├─ data/
+│  ├─ samples/     # Sample seed URLs and input documents
+│  └─ README.md
+├─ kg_artifacts/
+│  ├─ ontology.ttl
+│  ├─ expanded.nt
+│  └─ alignment.ttl
+├─ reports/
+│  └─ final_report.pdf
+├─ notebooks/      # Exploratory Jupyter notebooks
+├─ README.md
+├─ requirements.txt
+├─ .gitignore
+└─ LICENSE
 ```
 
-**Exemple :**
+---
+
+## ⚙️ Hardware Requirements
+
+| Component | Minimum | Recommended |
+|-----------|---------|-------------|
+| CPU | 4 cores | 8+ cores |
+| RAM | 8 GB | 16 GB |
+| Disk | 5 GB free | 20 GB free (crawled data can grow fast) |
+| GPU | *(optional)* | CUDA-capable GPU for KGE training & RAG |
+
+> **Note:** All modules run on CPU. A GPU (≥ 8 GB VRAM) is only needed for accelerated KGE training and local LLM inference in the RAG module.
+
+---
+
+## 🚀 Installation
+
+### 1. Clone the repository
+
+```bash
+git clone https://github.com/your-org/your-repo.git
+cd your-repo
 ```
-1. (Le Corbusier) -> [design] -> (Villa Savoye)
-   Context: Le Corbusier a conçu la Villa Savoye...
-   
-2. (Frank Lloyd Wright) -> [create] -> (Fallingwater)
-   Context: Frank Lloyd Wright a créé Fallingwater...
+
+### 2. Create and activate a virtual environment
+
+```bash
+python -m venv .venv
+source .venv/bin/activate      # Linux / macOS
+# .venv\Scripts\activate       # Windows
 ```
 
-**Affichage :** Les premières relations extraites sont affichées avec :
-- Numéro séquentiel
-- Triplet (source → relation → target)
-- Contexte : les 100 premiers caractères de la phrase source
+### 3. Install dependencies
 
-
-
-## 💻 Structure du code
-
-### Imports et configuration
-```python
-import trafilatura, json, spacy
-from collections import defaultdict
-from typing import Optional, List, Dict, Set
+```bash
+pip install -r requirements.txt
 ```
 
-### Fonctions principales par phase
+### 4. (Optional) Install a spaCy model for information extraction
 
-**Phase 1 (Web Scraping) :**
-- `is_useful(text, min_words)` → bool : Valide la qualité du texte
-- `extract_main_text(url)` → Optional[str] : Extrait contenu d'une page
-- `save_to_jsonl(records, output_path)` → None : Sauvegarde en JSONL
-- `build_corpus(urls)` → None : Pipeline complète Phase 1
+```bash
+python -m spacy download en_core_web_sm
+```
 
-**Phase 2 (NER) :**
-- `detect_language(text)` → str : Détecte EN ou FR
-- `is_valid_entity(ent)` → bool : Valide une entité selon critères
-- `extract_nodes(jsonl_path)` → Dict[str, Set[str]] : Extrait toutes entités
+---
 
-**Phase 3 (Relations) :**
-- `get_entity_by_token(token, doc)` → Optional[Entity] : Trouve entité au token
-- `extract_edges(jsonl_path)` → List[Dict] : Extrait triplets (source, relation, target)
+## 🔧 How to Run Each Module
 
+All commands are run from the **project root** with the virtual environment activated.
 
+---
 
+### 1. Crawl
 
-## 📊 Résultats attendus
+Fetches and stores raw HTML/text documents starting from a list of seed URLs.
 
-Après exécution complète :
+```bash
+python -m src.crawl.main \
+  --seeds data/samples/seeds.txt \
+  --output data/raw/ \
+  --depth 2
+```
 
-1. **Corpus** : ~14 documents d'architecture filtrés (>500 mots)
-2. **Entités** : Centaines d'entités uniques par catégorie
-3. **Relations** : Triplets (source, verbe, target) reliant entités et concepts
+| Argument | Description |
+|----------|-------------|
+| `--seeds` | Text file with one seed URL per line |
+| `--output` | Directory to store crawled documents |
+| `--depth` | Maximum crawl depth (default: `2`) |
+
+---
+
+### 2. Information Extraction (IE)
+
+Runs named entity recognition and relation extraction over raw crawled documents.
+
+```bash
+python -m src.ie.main \
+  --input data/raw/ \
+  --output data/extracted/ \
+  --model en_core_web_sm
+```
+
+| Argument | Description |
+|----------|-------------|
+| `--input` | Directory of raw crawled documents |
+| `--output` | Directory to write extracted triples (JSON-L) |
+| `--model` | spaCy model name |
+
+---
+
+### 3. Knowledge Graph (KG)
+
+Builds an RDF graph from extracted triples and serialises it to Turtle / N-Triples.
+
+```bash
+python -m src.kg.main \
+  --input data/extracted/ \
+  --ontology kg_artifacts/ontology.ttl \
+  --output kg_artifacts/expanded.nt
+```
+
+| Argument | Description |
+|----------|-------------|
+| `--input` | Directory of extracted triples |
+| `--ontology` | Base ontology file (`.ttl`) |
+| `--output` | Output KG file (`.nt` or `.ttl`) |
+
+---
+
+### 4. Reasoning
+
+Applies OWL/RDFS reasoning to materialise inferred triples from the KG.
+
+```bash
+python -m src.reason.main \
+  --kg kg_artifacts/expanded.nt \
+  --output kg_artifacts/inferred.nt \
+  --reasoner owlrl
+```
+
+| Argument | Description |
+|----------|-------------|
+| `--kg` | Input KG file |
+| `--output` | Output file with materialised inferences |
+| `--reasoner` | Reasoner backend (`owlrl`, `hermit`, `pellet`) |
+
+---
+
+### 5. KG Embeddings (KGE)
+
+Trains entity and relation embeddings (TransE, RotatE, …) on the knowledge graph.
+
+```bash
+python -m src.kge.main \
+  --kg kg_artifacts/expanded.nt \
+  --model RotatE \
+  --epochs 500 \
+  --output data/embeddings/
+```
+
+| Argument | Description |
+|----------|-------------|
+| `--kg` | Input KG file |
+| `--model` | Embedding model (`TransE`, `RotatE`, `ComplEx`) |
+| `--epochs` | Training epochs (default: `500`) |
+| `--output` | Directory to save trained embeddings |
+
+> A CUDA GPU is automatically used when detected.
+
+---
+
+### 6. RAG
+
+See the [RAG Demo](#rag-demo) section below.
+
+---
+
+## 🤖 RAG Demo
+
+The RAG module answers natural-language questions by retrieving relevant triples from the KG and passing them as context to a language model.
+
+### Prerequisites
+
+Ensure the KG has been built (step 3). Embeddings (step 5) are optional but improve retrieval quality.
+
+### Run the interactive CLI demo
+
+```bash
+python -m src.rag.demo \
+  --kg kg_artifacts/expanded.nt \
+  --embeddings data/embeddings/ \
+  --model mistralai/Mistral-7B-Instruct-v0.2
+```
+
+Example session:
+
+```
+> What websites were crawled and what topics do they cover?
+
+🔍 Retrieving relevant triples...
+🧠 Generating answer...
+
+Answer: The pipeline crawled [domain_1] and [domain_2], covering topics such as ...
+Sources: <entity_1>, <entity_2>, ...
+```
+
+### Run via Jupyter notebook
+
+```bash
+jupyter notebook notebooks/rag_demo.ipynb
+```
+
+### Arguments
+
+| Argument | Description |
+|----------|-------------|
+| `--kg` | Path to the KG (`.nt` or `.ttl`) |
+| `--embeddings` | Directory with trained KGE embeddings (optional) |
+| `--model` | HuggingFace model ID or local path |
+| `--top-k` | Number of triples to retrieve per query (default: `5`) |
+| `--device` | `cuda` or `cpu` (auto-detected if omitted) |
+
+---
+
+## 🗄 KG Artifacts
+
+Pre-built artifacts are available in `kg_artifacts/`:
+
+| File | Description |
+|------|-------------|
+| `ontology.ttl` | Base domain ontology (Turtle) |
+| `expanded.nt` | Full materialised knowledge graph (N-Triples) |
+| `alignment.ttl` | Cross-ontology alignment mappings |
+
+---
+
+## 📸 Screenshot
+
+![RAG demo screenshot](docs/screenshots/rag_demo.png)
+
+---
+
+## 📄 License
+
+This project is licensed under the terms of the [LICENSE](LICENSE) file.
