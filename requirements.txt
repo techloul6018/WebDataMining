@@ -1,7 +1,17 @@
-# Add your dependencies here
-# e.g.:
-# rdflib
-# requests
-# beautifulsoup4
-# pandas
-# scikit-learn
+trafilatura
+spacy
+spacy-transformers
+pandas
+httpx
+owlready2
+pykeen
+scikit-learn
+matplotlib
+rdflib
+numpy
+requests
+random
+urllib.parse
+time
+collections
+re

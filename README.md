@@ -88,7 +88,7 @@ source .venv/bin/activate      # Linux / macOS
 pip install -r requirements.txt
 ```
 
-### 4. (Optional) Install a spaCy model for information extraction
+### 4. Install a spaCy model for information extraction
 
 ```bash
 python -m spacy download en_core_web_sm
