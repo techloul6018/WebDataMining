@@ -1,17 +1,34 @@
-trafilatura
-spacy
-spacy-transformers
-pandas
-httpx
-owlready2
-pykeen
-scikit-learn
-matplotlib
-rdflib
-numpy
-requests
-random
-urllib.parse
-time
-collections
-re
+# ── Web Crawling & Cleaning ──
+httpx>=0.24.0
+trafilatura>=1.6.0
+lxml_html_clean>=0.1.0
+
+# ── NLP / NER ──
+spacy>=3.5.0
+spacy-transformers>=1.2.0
+# After installing, run: python -m spacy download en_core_web_trf
+
+# ── Data Management ──
+pandas>=1.5.0
+
+# ── RDF / Knowledge Graph ──
+rdflib>=6.3.0
+
+# ── Ontology & Reasoning ──
+owlready2>=0.46
+
+# ── Knowledge Graph Embedding ──
+pykeen>=1.10.0
+torch>=2.0.0
+scikit-learn>=1.2.0
+
+# ── Visualization ──
+matplotlib>=3.7.0
+
+# ── RAG / LLM ──
+requests>=2.31.0
+# Ollama must be installed separately: https://ollama.com
+# After installing, run: ollama pull gemma:2b
+
+# ── Utilities ──
+pyparsing>=3.1.0
