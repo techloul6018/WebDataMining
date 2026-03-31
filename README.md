@@ -263,15 +263,3 @@ Pre-built artifacts are available in `kg_artifacts/`:
 | `ontology.ttl` | Base domain ontology (Turtle) |
 | `expanded.nt` | Full materialised knowledge graph (N-Triples) |
 | `alignment.ttl` | Cross-ontology alignment mappings |
-
----
-
-## 📸 Screenshot
-
-![RAG demo screenshot](docs/screenshots/rag_demo.png)
-
----
-
-## 📄 License
-
-This project is licensed under the terms of the [LICENSE](LICENSE) file.
