@@ -164,19 +164,13 @@ ollama serve
 
 ---
 
-## RAG Demo
+## RAG 
 
 The RAG pipeline answers natural language questions by generating SPARQL queries over the knowledge graph.
 
-**Example questions:**
+ Demo : 
 
-| Question | RAG Answer |
-|---|---|
-| What are the works of Isaac Asimov? | 10 linked works from KG |
-| Who was born in Chicago? | James Tiptree Jr., Timothy Zahn... |
-| Which authors write in the Sci-Fi genre? | 20 authors from KG |
-| What is the genre of Gordon R. Dickson? | Fantasy, Science_fiction |
-| What is the movement of Isaac Asimov? | Golden_Age_of_Science_Fiction |
+![RAG demo screenshot](docs/rag_demo.jpeg)
 
 ---
 
@@ -205,12 +199,5 @@ Pre-built artifacts are available in `kg_artifacts/`:
 
 ---
 
-## 📸 Screenshot
 
-![RAG demo screenshot](docs/screenshots/rag_demo.png)
 
----
-
-## 📄 License
-
-This project is licensed under the terms of the [LICENSE](LICENSE) file.
